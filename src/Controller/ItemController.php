@@ -2,7 +2,9 @@
 
 declare(strict_types = 1);
 
-namespace App;
+namespace App\Controller;
+
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Class ItemController
