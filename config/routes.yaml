@@ -1,4 +1,9 @@
+home_page:
+    path: /
+    methods: GET
+    controller: App\Controller\HomeController::greetAPIUsers
+
 create_items:
     path: /api/create-items
-    methods: GET
+    methods: POST
     controller: App\Controller\ItemController::createItems

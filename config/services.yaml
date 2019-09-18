@@ -4,6 +4,11 @@ services:
         autoconfigure: true
         public: false
 
+    App\:
+        resource: '../src/*'
+        exclude: '../src/{Entity,Core,Migrations,Events}'
+
     App\Controller\:
-          resource: '../src/Controller'
-          tags: ['controller.service_arguments']
+        public: true
+        resource: '../src/Controller'
+        tags: ['controller.service_arguments']

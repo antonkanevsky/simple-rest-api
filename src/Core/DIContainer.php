@@ -31,8 +31,10 @@ class DIContainer
     public function __construct(string $configFilename)
     {
         $this->container = new ContainerBuilder();
-        $this->loader = new YamlFileLoader($this->container, new FileLocator(dirname(__DIR__, 2)));
+        $this->loader    = new YamlFileLoader($this->container, new FileLocator(dirname(__DIR__, 2)));
+
         $this->loader->load($configFilename);
+        $this->container->compile();
     }
 
     /**
@@ -42,8 +44,20 @@ class DIContainer
      *
      * @return object
      */
-    public function get($serviceName)
+    public function get(string $serviceName)
     {
         return $this->container->get($serviceName);
+    }
+
+    /**
+     * Проверяет, есть ли сервис в DI-контейнере
+     *
+     * @param string $serviceName Имя сервиса
+     *
+     * @return bool
+     */
+    public function has(string $serviceName)
+    {
+        return $this->container->has($serviceName);
     }
 }

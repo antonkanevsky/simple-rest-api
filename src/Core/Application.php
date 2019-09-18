@@ -6,6 +6,7 @@ namespace App\Core;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Exception\ExceptionInterface as RoutingException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Config\FileLocator;
@@ -21,7 +22,14 @@ class Application
      */
     private $container;
 
+    /**
+     * @var UrlMatcher
+     */
+    private $matcher;
 
+    /**
+     * Конструктор
+     */
     public function __construct()
     {
         $this->container = new DIContainer('config/services.yaml');
@@ -36,17 +44,33 @@ class Application
      */
     public function handle(Request $request): Response
     {
-        $matcher = $this->initURLMatcher($request);
-        $match = $matcher->match($request->getPathInfo());
+        $this->initURLMatcher($request);
 
-        if ($match) {
-            return new Response('Route found!!!');
+        try {
+            $match = $this->matcher->matchRequest($request);
+
+            list($controllerClass, $method) = explode('::', $match['_controller'], 2);
+
+            return $this->getResponse($controllerClass, $method);
+        } catch (RoutingException $e) {
+            $message = sprintf('No route found for "%s %s"', $request->getMethod(), $request->getPathInfo());
+            throw new \RuntimeException($message, Response::HTTP_NOT_FOUND, $e);
+        } catch (\Exception $e) {
+            $message = sprintf(
+                'Error while handling request "%s %s"',
+                $request->getMethod(),
+                $request->getPathInfo()
+            );
+            throw new \RuntimeException($message, Response::HTTP_INTERNAL_SERVER_ERROR, $e);
         }
-
-        return new Response('No route found');
     }
 
-    private function initURLMatcher(Request $request)
+    /**
+     * Инициализирует сопоставитель роутов
+     *
+     * @param Request $request
+     */
+    private function initURLMatcher(Request $request): void
     {
         $loader = new YamlFileLoader(new FileLocator(dirname(__DIR__, 2).'/config'));
         $routes = $loader->load('routes.yaml');
@@ -54,6 +78,38 @@ class Application
         $context = new RequestContext();
         $context->fromRequest($request);
 
-        return new UrlMatcher($routes, $context);
+        $this->matcher = new UrlMatcher($routes, $context);
+    }
+
+    /**
+     * Получает респонс из контролера
+     *
+     * @param string $controllerClass
+     * @param string $method
+     *
+     * @return Response
+     */
+    private function getResponse(string $controllerClass, string $method): Response
+    {
+        if (!$this->container->has($controllerClass)) {
+            throw new \RuntimeException(\sprintf('%s is not found in DI container', $controllerClass));
+        }
+
+        $controller = $this->container->get($controllerClass);
+
+        $response = call_user_func([$controller, $method]);
+
+        if (!$response instanceof Response) {
+            throw new \LogicException(
+                sprintf(
+                    'Return value of %s::%s should be the the instance of "%s"',
+                    $controllerClass,
+                    $method,
+                    'Symfony\Component\HttpFoundation\Response'
+                )
+            );
+        }
+
+        return $response;
     }
 }

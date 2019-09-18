@@ -1,19 +1,15 @@
-
+/vendor/
 ###> symfony/framework-bundle ###
 /.env
 /var/
-/vendor/
 ###< symfony/framework-bundle ###
 
 /composer.phar
+composer.lock
 .idea/
 /node_modules/*
 yarn-error.log
 npm-debug.log
-###> symfony/phpunit-bridge ###
-.phpunit
-/phpunit.xml
-###< symfony/phpunit-bridge ###
 
 ###> squizlabs/php_codesniffer ###
 /.phpcs-cache
