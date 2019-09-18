@@ -1,4 +1,4 @@
 create_items:
     path: /api/create-items
-    methods: POST
+    methods: GET
     controller: App\Controller\ItemController::createItems
