@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Core;
 
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Exception\ExceptionInterface as RoutingException;
@@ -11,6 +12,7 @@ use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader as DIYamlFileLoader;
 
 /**
  * Базовый класс приложения
@@ -18,7 +20,9 @@ use Symfony\Component\Routing\Loader\YamlFileLoader;
 class Application
 {
     /**
-     * @var DIContainer
+     * DI контейнер
+     *
+     * @var ContainerBuilder
      */
     private $container;
 
@@ -28,11 +32,18 @@ class Application
     private $matcher;
 
     /**
+     * Корневая директория проекта
+     *
+     * @var string
+     */
+    private $rootDir;
+
+    /**
      * Конструктор
      */
     public function __construct()
     {
-        $this->container = new DIContainer('config/services.yaml');
+        $this->rootDir = realpath(dirname(__DIR__, 2));
     }
 
     /**
@@ -44,6 +55,8 @@ class Application
      */
     public function handle(Request $request): Response
     {
+        $this->initDIContainer();
+
         $this->initURLMatcher($request);
 
         try {
@@ -66,13 +79,39 @@ class Application
     }
 
     /**
+     * Получить контейнер зависимостей
+     *
+     * @return ContainerBuilder
+     */
+    public function getContainer(): ContainerBuilder
+    {
+        return $this->container;
+    }
+
+    /**
+     * Инициализирует DI контейнер
+     */
+    private function initDIContainer(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('app.root_dir', $this->rootDir);
+
+        $loader = new DIYamlFileLoader($container, new FileLocator($this->rootDir.'/config'));
+        $loader->load('services.yaml');
+
+        $container->compile();
+
+        $this->container = $container;
+    }
+
+    /**
      * Инициализирует сопоставитель роутов
      *
      * @param Request $request
      */
     private function initURLMatcher(Request $request): void
     {
-        $loader = new YamlFileLoader(new FileLocator(dirname(__DIR__, 2).'/config'));
+        $loader = new YamlFileLoader(new FileLocator($this->rootDir.'/config'));
         $routes = $loader->load('routes.yaml');
 
         $context = new RequestContext();
