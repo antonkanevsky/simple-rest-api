@@ -4,10 +4,12 @@ declare(strict_types = 1);
 
 namespace App\Entity;
 
+use App\Core\EntityInterface;
+
 /**
  * Сущность "Товар"
  */
-class Item
+class Item implements EntityInterface
 {
     /**
      * Идентификатор товара
@@ -33,19 +35,33 @@ class Item
     /**
      * Получить идентификатор
      *
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
     /**
+     * Установить id
+     *
+     * @param int $id
+     *
+     * @return Item
+     */
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
      * Получить цену
      *
-     * @return float
+     * @return float|null
      */
-    public function getPrice(): float
+    public function getPrice(): ?float
     {
         return $this->price;
     }
