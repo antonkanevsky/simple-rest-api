@@ -13,9 +13,9 @@ use App\Repository\ItemRepository;
 class ItemGeneratorService implements ItemGeneratorServiceInterface
 {
     /**
-     * Лимит товаров для генерации
+     * Лимит товаров для генерации (по умолчанию)
      */
-    private const LIMIT = 5;
+    const DEFAULT_LIMIT = 20;
 
     /**
      * Репозиторий товаров
@@ -25,17 +25,28 @@ class ItemGeneratorService implements ItemGeneratorServiceInterface
     private $itemRepository;
 
     /**
+     * Лимит товаров для генерации
+     *
+     * @var int
+     */
+    private $limit;
+
+    /**
      * Конструктор
      *
      * @param ItemRepository $itemRepository
+     * @param int            $limit
      */
-    public function __construct(ItemRepository $itemRepository)
+    public function __construct(ItemRepository $itemRepository, int $limit = self::DEFAULT_LIMIT)
     {
         $this->itemRepository = $itemRepository;
+        $this->limit = $limit;
     }
 
     /**
      * Генерирует новые товары
+     *
+     * @param int $limit
      *
      * @return Item[]
      */
@@ -43,7 +54,7 @@ class ItemGeneratorService implements ItemGeneratorServiceInterface
     {
         $items = [];
         $price = 100;
-        for ($i = 1; $i <= self::LIMIT; $i++) {
+        for ($i = 1; $i <= $this->limit; $i++) {
             $item = new Item();
             $item
                 ->setName('Товар ' . $i)

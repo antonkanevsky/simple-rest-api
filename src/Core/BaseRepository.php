@@ -65,14 +65,10 @@ abstract class BaseRepository
      */
     public function initPDO(array $pdoConfig)
     {
-        $driver   = $pdoConfig['driver'];
-        $host     = $pdoConfig['host'];
-        $port     = $pdoConfig['port'];
+        $dsn      = $pdoConfig['dsn'];
         $user     = $pdoConfig['user'];
         $password = $pdoConfig['password'];
-        $database = $pdoConfig['database'];
 
-        $dsn = "$driver:host=$host;port=$port;dbname=$database";
         $this->pdo = new PDO($dsn, $user, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
     }
 

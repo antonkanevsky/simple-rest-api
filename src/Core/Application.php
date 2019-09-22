@@ -54,6 +54,8 @@ class Application
     {
         $this->rootDir     = realpath(dirname(__DIR__, 2));
         $this->environment = $environment;
+
+        $this->initDIContainer();
     }
 
     /**
@@ -65,8 +67,6 @@ class Application
      */
     public function handle(Request $request): Response
     {
-        $this->initDIContainer();
-
         $this->initURLMatcher($request);
 
         try {
@@ -108,14 +108,12 @@ class Application
             'app.root_dir'    => $this->rootDir,
             'app.environment' => $this->environment,
         ]);
-        $container->setParameter('app.root_dir', $this->rootDir);
-        $container->setParameter('app.environment', $this->environment);
 
-
-        $loader = new DIYamlFileLoader($container, new FileLocator($this->rootDir.'/config'));
+        $confDir = $this->rootDir.'/config';
+        $loader  = new DIYamlFileLoader($container, new FileLocator($confDir));
         $loader->load('services.yaml');
         // Настройка сервисов для конкретного окружения
-        $environmentConfigFile = sprintf('services_%s.yaml', $this->environment);
+        $environmentConfigFile = sprintf($confDir.'/services_%s.yaml', $this->environment);
         if (file_exists($environmentConfigFile)) {
             $loader->load($environmentConfigFile);
         }

@@ -1,0 +1,12 @@
+imports:
+    - { resource: parameters/db_test.yaml }
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    App\Service\ItemGeneratorService:
+        arguments:
+            $limit: 2
