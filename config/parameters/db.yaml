@@ -1,0 +1,8 @@
+parameters:
+    pdo:
+        driver: 'pgsql'
+        host: 172.17.0.2
+        port: 5432
+        database: 'rest_api'
+        user: postgres
+        password: postgres

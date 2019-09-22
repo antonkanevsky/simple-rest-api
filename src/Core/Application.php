@@ -39,11 +39,21 @@ class Application
     private $rootDir;
 
     /**
-     * Конструктор
+     * Признак окружения
+     *
+     * @var string
      */
-    public function __construct()
+    private $environment;
+
+    /**
+     * Конструктор
+     *
+     * @string $environment Признак окружения приложения
+     */
+    public function __construct(string $environment = 'prod')
     {
-        $this->rootDir = realpath(dirname(__DIR__, 2));
+        $this->rootDir     = realpath(dirname(__DIR__, 2));
+        $this->environment = $environment;
     }
 
     /**
@@ -94,10 +104,21 @@ class Application
     private function initDIContainer(): void
     {
         $container = new ContainerBuilder();
+        $container->getParameterBag()->add([
+            'app.root_dir'    => $this->rootDir,
+            'app.environment' => $this->environment,
+        ]);
         $container->setParameter('app.root_dir', $this->rootDir);
+        $container->setParameter('app.environment', $this->environment);
+
 
         $loader = new DIYamlFileLoader($container, new FileLocator($this->rootDir.'/config'));
         $loader->load('services.yaml');
+        // Настройка сервисов для конкретного окружения
+        $environmentConfigFile = sprintf('services_%s.yaml', $this->environment);
+        if (file_exists($environmentConfigFile)) {
+            $loader->load($environmentConfigFile);
+        }
 
         $container->compile();
 
@@ -136,7 +157,7 @@ class Application
 
         $controller = $this->container->get($controllerClass);
 
-        $response = call_user_func([$controller, $method]);
+        $response = $controller->{$method}();
 
         if (!$response instanceof Response) {
             throw new \LogicException(

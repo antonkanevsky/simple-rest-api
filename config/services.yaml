@@ -1,14 +1,24 @@
+imports:
+    - { resource: parameters/db.yaml }
+
 services:
     _defaults:
         autowire: true
         autoconfigure: true
         public: false
 
+    _instanceof:
+        App\Core\BaseRepository:
+            calls:
+                - ['initPDO', ['%pdo%']]
+
     App\:
         resource: '../src/*'
-        exclude: '../src/{Entity,Core,Migrations,Events}'
+        exclude: '../src/{Entity,Migrations,Events}'
 
     App\Controller\:
         public: true
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
+
+    App\Service\ItemGeneratorServiceInterface: '@App\Service\ItemGeneratorService'
