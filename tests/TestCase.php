@@ -15,6 +15,7 @@ use PDO;
 abstract class TestCase extends BaseTestCase
 {
     use SchemaTrait;
+    use FixturesTrait;
 
     /**
      * Инстанс REST API приложения
@@ -39,7 +40,10 @@ abstract class TestCase extends BaseTestCase
 
         $this->application = new Application('test');
 
-        $options = [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
+        $options = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        ];
         $dsn = $this->getContainer()->getParameter('pdo')['dsn'];
         $this->pdo = new PDO($dsn, null, null, $options);
         $this->updateSchema();

@@ -9,6 +9,10 @@ use App\Entity\Item;
 
 /**
  * Репозиторий товаров
+ *
+ * @method Item|null findById($id)
+ * @method Item[]    findAll()
+ * @method void      save(Item $item)
  */
 class ItemRepository extends BaseRepository
 {
@@ -16,6 +20,15 @@ class ItemRepository extends BaseRepository
      * {@inheritdoc}
      */
     const TABLE_NAME = 'items';
+
+    /**
+     * {@inheritdoc}
+     */
+    const FIELDS_TYPE_MAPPING = [
+        'id'    => self::COLUMN_TYPE_INT,
+        'name'  => self::COLUMN_TYPE_STRING,
+        'price' => self::COLUMN_TYPE_FLOAT,
+    ];
 
     /**
      * {@inheritdoc}

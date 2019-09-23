@@ -17,9 +17,19 @@ abstract class BaseRepository
     const TABLE_NAME = '';
 
     /**
+     * Маппинг полей к типам в бд
+     */
+    const FIELDS_TYPE_MAPPING = [];
+
+    /**
      * Первичный ключ по умолчанию
      */
     const PRIMARY_KEY = 'id';
+
+    // Типы колонок в БД
+    const COLUMN_TYPE_INT    = 1;
+    const COLUMN_TYPE_FLOAT  = 2;
+    const COLUMN_TYPE_STRING = 3;
 
     /**
      * Поля сущности в бд
@@ -69,7 +79,15 @@ abstract class BaseRepository
         $user     = $pdoConfig['user'];
         $password = $pdoConfig['password'];
 
-        $this->pdo = new PDO($dsn, $user, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $this->pdo = new PDO(
+            $dsn,
+            $user,
+            $password,
+            [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            ]
+        );
     }
 
     /**
@@ -85,7 +103,7 @@ abstract class BaseRepository
     /**
      * Сохраняет изменения в БД
      *
-     * @param EntityInterface $entity
+     * @param EntityInterface $entity Объект модели
      */
     public function save(EntityInterface $entity)
     {
@@ -105,6 +123,21 @@ abstract class BaseRepository
         } else {
             $this->updateRow((int)$id, $data);
         }
+    }
+
+    /**
+     * Получить все объекты сущности
+     *
+     * @return array
+     */
+    public function findAll(): array
+    {
+        $sql  = sprintf('SELECT * FROM "%s"', static::TABLE_NAME);
+        $stmt = $this->pdo->query($sql);
+
+        $result = $stmt->fetchAll();
+
+        return $this->makeEntityCollection($result);
     }
 
     /**
@@ -176,7 +209,84 @@ abstract class BaseRepository
                     sprintf('You should specify %s::%s', $this->entityClass, $getterMethod)
                 );
             }
+
+            $setterMethod = 'set'.ucfirst($property);
+            if (!$entityClass->hasMethod($setterMethod)) {
+                throw new \LogicException(
+                    sprintf('You should specify %s::%s', $this->entityClass, $setterMethod)
+                );
+            }
         }
+    }
+
+    /**
+     * Получить коллекцию сущностей
+     *
+     * @param array $entitiesDataArray Результат выборки из бд
+     *
+     * @return  EntityInterface[]
+     */
+    private function makeEntityCollection(array $entitiesDataArray): array
+    {
+        $collection  = [];
+        foreach ($entitiesDataArray as $data) {
+            $collection[] = $this->makeEntity($data);
+        }
+
+        return $collection;
+    }
+
+    /**
+     * Получить сущность из данных записи в БД
+     *
+     * @param array $data
+     *
+     * @return EntityInterface
+     */
+    private function makeEntity(array $data): EntityInterface
+    {
+        $entityClass = $this->entityClass;
+        $entity = new $entityClass();
+
+        foreach ($data as $key => $value) {
+            $value    = $this->formatColumnValue($key, $value);
+            $property = $this->normalizeToCamelCase($key);
+            $entity->{'set'.ucfirst($property)}($value);
+        }
+
+        return $entity;
+    }
+
+    /**
+     * Форматирует значение столбца из БД в формат хранимый в сущности
+     *
+     * @param string $columnName
+     * @param mixed  $value
+     *
+     * @return mixed
+     */
+    private function formatColumnValue(string $columnName, $value)
+    {
+        if (!isset(static::FIELDS_TYPE_MAPPING[$columnName])) {
+            return $value;
+        }
+
+        $fieldType = static::FIELDS_TYPE_MAPPING[$columnName];
+        switch ($fieldType) {
+            case self::COLUMN_TYPE_INT:
+                $value = (int) $value;
+                break;
+            case self::COLUMN_TYPE_STRING:
+                $value = (string) $value;
+                break;
+            case self::COLUMN_TYPE_FLOAT:
+                $value = (float) $value;
+                break;
+            default:
+                $value = (string) $value;
+        }
+
+        return $value;
     }
 
     /**
@@ -189,5 +299,21 @@ abstract class BaseRepository
     private function camelToSnakeCase(string $propertyName)
     {
         return strtolower(preg_replace('/[A-Z]/', '_\\0', lcfirst($propertyName)));
+    }
+
+    /**
+     * Преобразовывает название колонки к camelCase
+     *
+     * @param string $column
+     *
+     * @return string
+     */
+    private function normalizeToCamelCase(string $column): string
+    {
+        $camelCasedName = preg_replace_callback('/(^|_|\.)+(.)/', function ($match) {
+            return ('.' === $match[1] ? '_' : '').strtoupper($match[2]);
+        }, $column);
+
+        return lcfirst($camelCasedName);
     }
 }
