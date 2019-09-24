@@ -1,5 +1,5 @@
 parameters:
-    pdo:
+    db:
         dsn: 'sqlite:%app.root_dir%/db.sqlite'
         user:
         password:

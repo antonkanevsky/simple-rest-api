@@ -10,7 +10,7 @@ services:
     _instanceof:
         App\Core\BaseRepository:
             calls:
-                - ['initPDO', ['%pdo%']]
+                - ['setDBConnection', ['@app.db_connection']]
 
     App\:
         resource: '../src/*'
@@ -21,4 +21,13 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
+    App\Core\DBConnection:
+        arguments: ['%db%']
+
+    app.db_connection:
+        alias: 'App\Core\DBConnection'
+        public: true
+
     App\Service\ItemGeneratorServiceInterface: '@App\Service\ItemGeneratorService'
+
+    App\Service\CreateOrderServiceInterface: '@App\Service\CreateOrderService'

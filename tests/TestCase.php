@@ -5,9 +5,9 @@ declare(strict_types = 1);
 namespace App\Tests;
 
 use App\Core\Application;
+use App\Core\DBConnection;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use PDO;
 
 /**
  * Базовый класс для функциональных тестов
@@ -25,11 +25,11 @@ abstract class TestCase extends BaseTestCase
     protected $application;
 
     /**
-     * Подключение к тестовой БД
+     * Подключение к БД
      *
-     * @var PDO
+     * @var DBConnection
      */
-    private $pdo;
+    private $dbConnection;
 
     /**
      * Установка окружения
@@ -38,14 +38,8 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->application = new Application('test');
-
-        $options = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ];
-        $dsn = $this->getContainer()->getParameter('pdo')['dsn'];
-        $this->pdo = new PDO($dsn, null, null, $options);
+        $this->application  = new Application('test');
+        $this->dbConnection = $this->getContainer()->get('app.db_connection');
         $this->updateSchema();
     }
 
@@ -57,7 +51,7 @@ abstract class TestCase extends BaseTestCase
         $this->dropSchema();
         unset(
             $this->application,
-            $this->pdo
+            $this->dbConnection
         );
     }
 

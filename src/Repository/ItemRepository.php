@@ -10,7 +10,7 @@ use App\Entity\Item;
 /**
  * Репозиторий товаров
  *
- * @method Item|null findById($id)
+ * @method Item|null findById(mixed $id)
  * @method Item[]    findAll()
  * @method void      save(Item $item)
  */

@@ -46,9 +46,11 @@ abstract class BaseRepository
     protected $entityClass;
 
     /**
-     * @var PDO
+     * Соединение с БД
+     *
+     * @var DBConnection
      */
-    private $pdo;
+    private $dbConnection;
 
     /**
      * Конструктор
@@ -69,35 +71,43 @@ abstract class BaseRepository
     }
 
     /**
-     * Установка PDO
+     * Сетер для соединения с БД
      *
-     * @param array $pdoConfig Конфиг для PDO
+     * @param DBConnection $connection
+     *
+     * @return BaseRepository
      */
-    public function initPDO(array $pdoConfig)
+    public function setDBConnection(DBConnection $connection): self
     {
-        $dsn      = $pdoConfig['dsn'];
-        $user     = $pdoConfig['user'];
-        $password = $pdoConfig['password'];
+        $this->dbConnection = $connection;
 
-        $this->pdo = new PDO(
-            $dsn,
-            $user,
-            $password,
-            [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            ]
-        );
+        return $this;
     }
 
     /**
      * Получить сущность по id
      *
-     * @param int $id
+     * @param int|string $id
+     *
+     * @return EntityInterface|null
      */
-    public function findById(int $id)
+    public function findById($id): ?EntityInterface
     {
-        // TODO
+        $sql = sprintf(
+            'SELECT * FROM "%s" WHERE %s = ?',
+            static::TABLE_NAME,
+            static::PRIMARY_KEY
+        );
+        $stmt = $this->dbConnection->prepare($sql);
+
+        $stmt->execute([(int) $id]);
+        $result = $stmt->fetch();
+
+        if (false === $result) {
+            return null;
+        }
+
+        return $this->makeEntity($result);
     }
 
     /**
@@ -133,7 +143,7 @@ abstract class BaseRepository
     public function findAll(): array
     {
         $sql  = sprintf('SELECT * FROM "%s"', static::TABLE_NAME);
-        $stmt = $this->pdo->query($sql);
+        $stmt = $this->dbConnection->query($sql);
 
         $result = $stmt->fetchAll();
 
@@ -157,11 +167,11 @@ abstract class BaseRepository
             }, array_keys($data))),
             implode(', ', array_fill(0, count($data), '?'))
         );
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->dbConnection->prepare($sql);
 
         $stmt->execute(array_values($data));
 
-        return (int) $this->pdo->lastInsertId();
+        return (int) $this->dbConnection->getLastInsertId();
     }
 
     /**
@@ -181,7 +191,7 @@ abstract class BaseRepository
             static::PRIMARY_KEY . ' = ?'
         );
 
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->dbConnection->prepare($sql);
         $params = array_values($data);
         $params[] = $id;
 

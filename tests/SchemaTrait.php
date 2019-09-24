@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Tests;
 
-use PDO;
+use App\Core\DBConnection;
 
 /**
  * Трейт для обновления схемы тестовой БД
@@ -12,11 +12,11 @@ use PDO;
 trait SchemaTrait
 {
     /**
-     * Подключение к тестовой БД
+     * Подключение к БД
      *
-     * @var PDO
+     * @var DBConnection
      */
-    private $pdo;
+    private $dbConnection;
 
     /**
      * Обновить схему в тестовой БД
@@ -35,7 +35,7 @@ CREATE TABLE items (
 );
 SQL;
 
-        $this->pdo->exec($sql);
+        $this->dbConnection->exec($sql);
     }
 
     /**
@@ -47,6 +47,6 @@ SQL;
 DROP TABLE orders;
 DROP TABLE items;
 SQL;
-        $this->pdo->exec($sql);
+        $this->dbConnection->exec($sql);
     }
 }

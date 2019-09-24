@@ -12,3 +12,8 @@ get_items:
     path: /api/get-items
     methods: GET
     controller: App\Controller\ItemController::getItems
+
+create_order:
+    path: /api/create-order
+    methods: POST
+    controller: App\Controller\OrderController::createOrder

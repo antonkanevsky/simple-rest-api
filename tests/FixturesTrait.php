@@ -4,15 +4,19 @@ declare(strict_types = 1);
 
 namespace App\Tests;
 
+use App\Core\DBConnection;
+
 /**
  * Трейт для загрузки фикстур
  */
 trait FixturesTrait
 {
     /**
-     * @var \PDO
+     * Подключение к БД
+     *
+     * @var DBConnection
      */
-    private $pdo;
+    private $dbConnection;
 
     /**
      * Загружает данные в тестовую БД
@@ -29,7 +33,7 @@ trait FixturesTrait
                 implode(', ', array_keys($data)),
                 implode(', ', array_fill(0, count($data), '?'))
             );
-            $stmt = $this->pdo->prepare($sql);
+            $stmt = $this->dbConnection->prepare($sql);
 
             $stmt->execute(array_values($data));
         }
