@@ -34,7 +34,7 @@ class OrderController
     /**
      * Создание заказа
      *
-     * @return JsonResponse
+     * @return JsonResponse Возвращает id созданного заказа
      */
     public function createOrder(): JsonResponse
     {
@@ -49,9 +49,7 @@ class OrderController
         try {
             $order = $this->createOrderService->createOrder($itemIds);
 
-            return new JsonResponse([
-                'id' => 'asasdasds'
-            ]);
+            return new JsonResponse(['id' => $order->getId()]);
         } catch (APIServiceException $e) {
             return new JsonResponse(
                 [

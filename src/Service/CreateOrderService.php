@@ -73,7 +73,33 @@ class CreateOrderService implements CreateOrderServiceInterface
             $items[] = $item;
         }
 
-        $this->dbConnection->beginTransaction();
+        try {
+            $this->dbConnection->beginTransaction();
 
+            $order = $this->createNewOrder();
+            $this->orderRepository->addItemsToOrder($order->getId(), $items);
+
+            $this->dbConnection->commit();
+        } catch (\Exception $e) {
+            $this->dbConnection->rollback();
+            throw $e;
+        }
+
+        return $order;
+    }
+
+    /**
+     * Создает новый заказ
+     *
+     * @return Order
+     */
+    private function createNewOrder(): Order
+    {
+        $order = new Order();
+        $order->setStatus(Order::STATUS_NEW);
+
+        $this->orderRepository->save($order);
+
+        return $order;
     }
 }
