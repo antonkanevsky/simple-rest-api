@@ -47,6 +47,28 @@ class Order implements EntityInterface
     private $status;
 
     /**
+     * Дата создания
+     *
+     * @var \DateTimeInterface
+     */
+    private $createdAt;
+
+    /**
+     * Сумма заказа
+     *
+     * @var float
+     */
+    private $amount;
+
+    /**
+     * Конструктор
+     */
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
+    /**
      * Получить идентификатор
      *
      * @return int|null
@@ -96,6 +118,54 @@ class Order implements EntityInterface
         }
 
         $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * Получить дату создания
+     *
+     * @return \DateTimeInterface|null
+     */
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * Установить дату создания
+     *
+     * @param \DateTimeInterface $createdAt
+     *
+     * @return Order
+     */
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * Получить сумму заказа
+     *
+     * @return float
+     */
+    public function getAmount(): float
+    {
+        return $this->amount;
+    }
+
+    /**
+     * Установить сумму заказа
+     *
+     * @param float $amount
+     *
+     * @return Order
+     */
+    public function setAmount(float $amount): self
+    {
+        $this->amount = $amount;
 
         return $this;
     }

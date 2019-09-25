@@ -48,6 +48,8 @@ abstract class TestCase extends BaseTestCase
      */
     protected function tearDown()
     {
+        parent::tearDown();
+
         $this->dropSchema();
         unset(
             $this->application,

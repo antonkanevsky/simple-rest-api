@@ -25,7 +25,16 @@ class OrderRepository extends BaseRepository
     /**
      * {@inheritdoc}
      */
-    protected $fields = ['id', 'status'];
+    const FIELDS_TYPE_MAPPING = [
+        'id'         => self::COLUMN_TYPE_INT,
+        'created_at' => self::COLUMN_TYPE_DATE_TIME,
+        'amount'     => self::COLUMN_TYPE_FLOAT,
+    ];
+
+    /**
+     * {@inheritdoc}
+     */
+    protected $fields = ['id', 'status', 'created_at', 'amount'];
 
     /**
      * Конструктор

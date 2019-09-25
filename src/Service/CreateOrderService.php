@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace App\Service;
 
 use App\Core\DBConnection;
+use App\Entity\Item;
 use App\Entity\Order;
 use App\Repository\ItemRepository;
 use App\Repository\OrderRepository;
@@ -77,6 +78,9 @@ class CreateOrderService implements CreateOrderServiceInterface
             $this->dbConnection->beginTransaction();
 
             $order = $this->createNewOrder();
+            $order->setAmount($this->calculateAmount($items));
+
+            $this->orderRepository->save($order);
             $this->orderRepository->addItemsToOrder($order->getId(), $items);
 
             $this->dbConnection->commit();
@@ -98,8 +102,23 @@ class CreateOrderService implements CreateOrderServiceInterface
         $order = new Order();
         $order->setStatus(Order::STATUS_NEW);
 
-        $this->orderRepository->save($order);
-
         return $order;
+    }
+
+    /**
+     * Рассчитать сумму заказа
+     *
+     * @param Item[] $items
+     *
+     * @return float
+     */
+    private function calculateAmount(array $items): float
+    {
+        $amount = 0;
+        foreach ($items as $item) {
+            $amount += $item->getPrice();
+        }
+
+        return $amount;
     }
 }

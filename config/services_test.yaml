@@ -7,6 +7,21 @@ services:
         autoconfigure: true
         public: false
 
+    _instanceof:
+        App\Core\BaseRepository:
+            calls:
+                - ['setDBConnection', ['@app.db_connection']]
+
     App\Service\ItemGeneratorService:
         arguments:
             $limit: 2
+
+    test.create_order_service:
+        alias: 'App\Service\CreateOrderService'
+        public: true
+
+    App\Repository\OrderRepository:
+        public: true
+
+    App\Repository\ItemRepository:
+        public: true

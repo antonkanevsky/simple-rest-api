@@ -25,9 +25,10 @@ abstract class BaseRepository
     const PRIMARY_KEY = 'id';
 
     // Типы колонок в БД
-    const COLUMN_TYPE_INT    = 1;
-    const COLUMN_TYPE_FLOAT  = 2;
-    const COLUMN_TYPE_STRING = 3;
+    const COLUMN_TYPE_INT       = 1;
+    const COLUMN_TYPE_FLOAT     = 2;
+    const COLUMN_TYPE_STRING    = 3;
+    const COLUMN_TYPE_DATE_TIME = 4;
 
     /**
      * Поля сущности в бд
@@ -58,12 +59,6 @@ abstract class BaseRepository
     public function __construct(string $entityClass)
     {
         $this->entityClass = $entityClass;
-
-        if (empty($this->fields)) {
-            throw new \LogicException(
-                sprintf('You must specify db fields for %s in %s', $entityClass, get_called_class())
-            );
-        }
 
         $this->checkEntityClassStructure();
     }
@@ -117,7 +112,9 @@ abstract class BaseRepository
     {
         $data = [];
         foreach ($this->fields as $field) {
-            $data[$field] = $entity->{'get'.ucfirst($field)}();
+            $property = $this->normalizeToCamelCase($field);
+            $value    = $entity->{'get'.ucfirst($property)}();
+            $data[$field] = $this->formatValueToDBFormat($field, $value);
         }
 
         $id = $data[static::PRIMARY_KEY] ?? null;
@@ -127,7 +124,7 @@ abstract class BaseRepository
             $id = $this->insertRow($data);
             // TODO сделать проставление св-ва id через ReflectionProperty
             $idSetter = 'set'.ucfirst(static::PRIMARY_KEY);
-            $entity->{$idSetter}($id);
+            $entity->{$idSetter}((int)$id);
         } else {
             $this->updateRow((int)$id, $data);
         }
@@ -153,9 +150,9 @@ abstract class BaseRepository
      *
      * @param array $data
      *
-     * @return int
+     * @return string
      */
-    private function insertRow(array $data): int
+    private function insertRow(array $data)
     {
         $sql = sprintf(
             'INSERT INTO "%s" (%s) VALUES (%s)',
@@ -169,7 +166,7 @@ abstract class BaseRepository
 
         $stmt->execute(array_values($data));
 
-        return (int) $this->dbConnection->getLastInsertId();
+        return $this->dbConnection->getLastInsertId();
     }
 
     /**
@@ -203,8 +200,15 @@ abstract class BaseRepository
      */
     private function checkEntityClassStructure()
     {
+        if (empty($this->fields)) {
+            throw new \LogicException(
+                sprintf('You must specify db fields for %s in %s', $this->entityClass, get_called_class())
+            );
+        }
+
         $entityClass = new \ReflectionClass($this->entityClass);
         foreach ($this->fields as $property) {
+            $property = $this->normalizeToCamelCase($property);
             if (!$entityClass->hasProperty($property)) {
                 throw new \LogicException(
                     sprintf('Field "%s" should be specified in %s', $property, $this->entityClass)
@@ -257,7 +261,7 @@ abstract class BaseRepository
         $entity = new $entityClass();
 
         foreach ($data as $key => $value) {
-            $value    = $this->formatColumnValue($key, $value);
+            $value    = $this->formatValueToEntityFormat($key, $value);
             $property = $this->normalizeToCamelCase($key);
             $entity->{'set'.ucfirst($property)}($value);
         }
@@ -273,7 +277,7 @@ abstract class BaseRepository
      *
      * @return mixed
      */
-    private function formatColumnValue(string $columnName, $value)
+    private function formatValueToEntityFormat(string $columnName, $value)
     {
         if (!isset(static::FIELDS_TYPE_MAPPING[$columnName])) {
             return $value;
@@ -289,6 +293,41 @@ abstract class BaseRepository
                 break;
             case self::COLUMN_TYPE_FLOAT:
                 $value = (float) $value;
+                break;
+            case self::COLUMN_TYPE_DATE_TIME:
+                $value = new \DateTimeImmutable($value);
+                break;
+            default:
+                $value = (string) $value;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Форматирует значение св-ва сущности в формат для БД
+     *
+     * @param string $columnName
+     * @param mixed  $value
+     *
+     * @return mixed
+     */
+    private function formatValueToDBFormat(string $columnName, $value)
+    {
+        if (!isset(static::FIELDS_TYPE_MAPPING[$columnName]) || $value === null) {
+            return $value;
+        }
+
+        $fieldType = static::FIELDS_TYPE_MAPPING[$columnName];
+        switch ($fieldType) {
+            case self::COLUMN_TYPE_DATE_TIME:
+                $value = $value instanceof \DateTimeInterface ? $value->format('Y-m-d H:i:s') : (string) $value;
+                break;
+            case self::COLUMN_TYPE_FLOAT:
+                $value = (float) $value;
+                break;
+            case self::COLUMN_TYPE_INT:
+                $value = (int) $value;
                 break;
             default:
                 $value = (string) $value;

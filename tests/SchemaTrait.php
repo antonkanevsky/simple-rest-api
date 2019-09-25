@@ -26,7 +26,9 @@ trait SchemaTrait
         $sql = <<<'SQL'
 CREATE TABLE orders (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    status VARCHAR(32) NOT NULL
+    status VARCHAR(32) NOT NULL,
+    created_at datetime default current_timestamp,
+    amount DOUBLE PRECISION NOT NULL
 );
 CREATE TABLE items (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
