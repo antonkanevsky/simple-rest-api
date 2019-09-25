@@ -4,8 +4,6 @@ declare(strict_types = 1);
 
 namespace App\Core;
 
-use PDO;
-
 /**
  * Базовый класс репозитория сущности
  */
@@ -50,7 +48,7 @@ abstract class BaseRepository
      *
      * @var DBConnection
      */
-    private $dbConnection;
+    protected $dbConnection;
 
     /**
      * Конструктор

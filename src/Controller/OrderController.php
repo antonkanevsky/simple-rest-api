@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Controller;
 
+use App\Core\RequestAwareInterface;
 use App\Service\CreateOrderServiceInterface;
 use App\Service\Exception\APIServiceException;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Контролер заказов
  */
-class OrderController
+class OrderController implements RequestAwareInterface
 {
     /**
      * Сервис создания заказа
@@ -20,6 +21,13 @@ class OrderController
      * @var CreateOrderServiceInterface
      */
     private $createOrderService;
+
+    /**
+     * Реквест
+     *
+     * @var Request
+     */
+    private $request;
 
     /**
      * Конструктор
@@ -32,14 +40,23 @@ class OrderController
     }
 
     /**
+     * Установка объекта реквеста
+     *
+     * @param Request $request
+     */
+    public function setRequest(Request $request)
+    {
+        $this->request = $request;
+    }
+
+    /**
      * Создание заказа
      *
      * @return JsonResponse Возвращает id созданного заказа
      */
     public function createOrder(): JsonResponse
     {
-        $request = Request::createFromGlobals();
-        $content = json_decode($request->getContent(), true);
+        $content = json_decode($this->request->getContent(), true);
         $itemIds = $content['itemIds'] ?? [];
 
         if (empty($itemIds)) {

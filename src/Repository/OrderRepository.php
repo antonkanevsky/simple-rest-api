@@ -43,6 +43,12 @@ class OrderRepository extends BaseRepository
      */
     public function addItemsToOrder(int $orderId, $items): void
     {
-        // TODO
+        $sql = "INSERT INTO order_item (order_id, item_id) VALUES ($orderId, ?)";
+
+        $stmt = $this->dbConnection->prepare($sql);
+
+        foreach ($items as $item) {
+            $stmt->execute([$item->getId()]);
+        }
     }
 }

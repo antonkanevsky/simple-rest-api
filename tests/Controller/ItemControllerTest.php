@@ -51,12 +51,12 @@ class ItemControllerTest extends RestTestCase
                 [
                     'id'    => 2,
                     'name'  => 'Товар 2',
-                    'price' => '100.00',
+                    'price' => 100.00,
                 ],
                 [
                     'id'    => 3,
                     'name'  => 'Товар 3',
-                    'price' => '150.00',
+                    'price' => 150.00,
                 ],
             ],
             ItemRepository::TABLE_NAME
@@ -83,5 +83,19 @@ class ItemControllerTest extends RestTestCase
             ],
             $result
         );
+    }
+
+    /**
+     * Проверка, что отдается пустой  респонс, когда в бд нет товаров
+     */
+    public function testGetItemsEmptyResponse()
+    {
+        $response = $this->get('/api/get-items');
+
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertTrue($response->isOk());
+
+        $result = json_decode($response->getContent(), true);
+        $this->assertEquals([], $result);
     }
 }

@@ -43,30 +43,24 @@ class DBConnection
 
     /**
      * Начать транзакцию
-     *
-     * @return DBConnection
      */
-    public function beginTransaction(): self
+    public function beginTransaction(): void
     {
         $this->connection->beginTransaction();
     }
 
     /**
      * Коммит транзакции
-     *
-     * @return DBConnection
      */
-    public function commit(): self
+    public function commit(): void
     {
         $this->connection->commit();
     }
 
     /**
      * Откат транзакции
-     *
-     * @return DBConnection
      */
-    public function rollback(): self
+    public function rollback(): void
     {
         $this->connection->rollBack();
     }

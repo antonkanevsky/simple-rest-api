@@ -74,7 +74,7 @@ class Application
 
             list($controllerClass, $method) = explode('::', $match['_controller'], 2);
 
-            return $this->getResponse($controllerClass, $method);
+            return $this->getResponse($controllerClass, $method, $request);
         } catch (RoutingException $e) {
             $message = sprintf('No route found for "%s %s"', $request->getMethod(), $request->getPathInfo());
             throw new \RuntimeException($message, Response::HTTP_NOT_FOUND, $e);
@@ -142,18 +142,24 @@ class Application
     /**
      * Получает респонс из контролера
      *
-     * @param string $controllerClass
-     * @param string $method
+     * @param string  $controllerClass
+     * @param string  $method
+     * @param Request $request
      *
      * @return Response
      */
-    private function getResponse(string $controllerClass, string $method): Response
+    private function getResponse(string $controllerClass, string $method, Request $request): Response
     {
         if (!$this->container->has($controllerClass)) {
             throw new \RuntimeException(\sprintf('%s is not found in DI container', $controllerClass));
         }
 
         $controller = $this->container->get($controllerClass);
+
+        // Установка реквеста тем контролерам, которым он нужен
+        if ($controller instanceof RequestAwareInterface) {
+            $controller->setRequest($request);
+        }
 
         $response = $controller->{$method}();
 

@@ -33,6 +33,13 @@ CREATE TABLE items (
     name VARCHAR(255) NOT NULL,
     price DOUBLE PRECISION NOT NULL
 );
+CREATE TABLE order_item (
+    order_id INTEGER NOT NULL,
+    item_id INTEGER NOT NULL,
+    FOREIGN KEY(order_id) REFERENCES orders(id),
+    FOREIGN KEY(item_id) REFERENCES items(id),
+    PRIMARY KEY (order_id, item_id)
+);
 SQL;
 
         $this->dbConnection->exec($sql);
@@ -46,6 +53,7 @@ SQL;
         $sql = <<<'SQL'
 DROP TABLE orders;
 DROP TABLE items;
+DROP TABLE order_item;
 SQL;
         $this->dbConnection->exec($sql);
     }
