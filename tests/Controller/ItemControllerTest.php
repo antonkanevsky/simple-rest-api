@@ -18,7 +18,7 @@ class ItemControllerTest extends RestTestCase
      */
     public function testCreateItemsResponse()
     {
-        $response = $this->post('/api/create-items');
+        $response = $this->post('/api/items/create');
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertTrue($response->isOk());
@@ -62,7 +62,7 @@ class ItemControllerTest extends RestTestCase
             ItemRepository::TABLE_NAME
         );
 
-        $response = $this->get('/api/get-items');
+        $response = $this->get('/api/items');
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertTrue($response->isOk());
@@ -90,7 +90,7 @@ class ItemControllerTest extends RestTestCase
      */
     public function testGetItemsEmptyResponse()
     {
-        $response = $this->get('/api/get-items');
+        $response = $this->get('/api/items');
 
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertTrue($response->isOk());

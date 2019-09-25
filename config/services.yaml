@@ -31,3 +31,5 @@ services:
     App\Service\ItemGeneratorServiceInterface: '@App\Service\ItemGeneratorService'
 
     App\Service\CreateOrderServiceInterface: '@App\Service\CreateOrderService'
+
+    App\Service\OrderPayServiceInterface: '@App\Service\OrderPayService'

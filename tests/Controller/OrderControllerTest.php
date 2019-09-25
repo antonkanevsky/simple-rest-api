@@ -37,7 +37,7 @@ class OrderControllerTest extends RestTestCase
         );
 
         $response = $this->post(
-            '/api/create-order',
+            '/api/order/create',
             [],
             [],
             [],
@@ -66,7 +66,7 @@ class OrderControllerTest extends RestTestCase
     public function testCreateOrderBadRequestResponse(string $content)
     {
         $response = $this->post(
-            '/api/create-order',
+            '/api/order/create',
             [],
             [],
             [],
@@ -100,7 +100,7 @@ class OrderControllerTest extends RestTestCase
     public function testCreateOrderBadRequestWithErrorResponse()
     {
         $response = $this->post(
-            '/api/create-order',
+            '/api/order/create',
             [],
             [],
             [],
