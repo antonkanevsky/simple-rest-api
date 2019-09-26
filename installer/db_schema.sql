@@ -34,4 +34,3 @@ CREATE TABLE order_item
 	CONSTRAINT order_item_pkey
 		PRIMARY KEY (order_id, item_id)
 );
-

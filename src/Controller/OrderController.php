@@ -5,10 +5,10 @@ declare(strict_types = 1);
 namespace App\Controller;
 
 use App\Core\RequestAwareInterface;
-use App\Entity\Order;
 use App\Service\CreateOrderServiceInterface;
 use App\Service\Exception\APIServiceException;
 use App\Service\OrderPayServiceInterface;
+use App\Validator\ValidatorException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -93,44 +93,20 @@ class OrderController implements RequestAwareInterface
     /**
      * Оплата заказа
      *
-     * TODO Вынести валидацию входящих данных в слой формы
-     *
      * @return JsonResponse
      */
     public function payOrder(): JsonResponse
     {
-        $input   = json_decode($this->request->getContent(), true);
-        $orderId = $input['id'] ?? null;
-        if (null === $orderId) {
-            return new JsonResponse(null, JsonResponse::HTTP_BAD_REQUEST);
-        }
-
-        $amount = $input['amount'] ?? null;
-        $amount = filter_var($amount, FILTER_VALIDATE_FLOAT);
-        if (false === $amount) {
-            return new JsonResponse(null, JsonResponse::HTTP_BAD_REQUEST);
-        }
-
         try {
-            $order = $this->orderPayService->payOrder($orderId, $amount);
-            if (Order::STATUS_PAID === $order->getStatus()) {
-                return new JsonResponse(
-                    [
-                        'success' => true,
-                    ]
-                );
-            }
+            list($orderId, $paymentSum) = $this->validatePayOrderInputData();
+            $this->orderPayService->payOrder($orderId, $paymentSum);
 
-            /*
-             * Случай когда неполная оплата или HTTP запрос на ya.ru не удался
-             */
             return new JsonResponse(
                 [
-                    'error' => 'Partial payment or HTTP request from API server not OK',
-                ],
-                JsonResponse::HTTP_BAD_REQUEST
+                    'success' => true,
+                ]
             );
-        } catch (APIServiceException $e) {
+        } catch (APIServiceException | ValidatorException $e) {
             return new JsonResponse(
                 [
                     'error' => $e->getMessage(),
@@ -138,5 +114,39 @@ class OrderController implements RequestAwareInterface
                 JsonResponse::HTTP_BAD_REQUEST
             );
         }
+    }
+
+    /**
+     * Валидация входящих данных для метода оплаты заказа
+     * TODO Вынести валидацию входящих данных в отдельный класс
+     *
+     * @return array
+     *
+     * @throws ValidatorException
+     */
+    private function validatePayOrderInputData(): array
+    {
+        $input   = json_decode($this->request->getContent(), true);
+        $orderId = $input['id'] ?? null;
+        $amount  = $input['amount'] ?? null;
+
+        if (null === $orderId || null === $amount) {
+            throw new ValidatorException('Required fields are expected');
+        }
+
+        $amount  = filter_var($amount, FILTER_VALIDATE_FLOAT);
+        $orderId = filter_var(
+            $orderId,
+            FILTER_VALIDATE_REGEXP,
+            [
+                'options' => ['regexp' => '/^\d+$/']
+            ]
+        );
+
+        if (false === $orderId || false === $amount) {
+            throw new ValidatorException('Invalid input data');
+        }
+
+        return [$orderId, $amount];
     }
 }

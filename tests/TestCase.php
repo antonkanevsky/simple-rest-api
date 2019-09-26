@@ -66,4 +66,16 @@ abstract class TestCase extends BaseTestCase
     {
         return $this->application->getContainer();
     }
+
+    /**
+     * Установка зависимости в DI контейнере
+     *
+     * @param string  $serviceId
+     * @param object  $object
+     */
+    protected function setContainerDependency(string $serviceId, $object)
+    {
+        $this->getContainer()->removeDefinition($serviceId);
+        $this->getContainer()->set($serviceId, $object);
+    }
 }

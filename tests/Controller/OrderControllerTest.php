@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace App\Tests\Controller;
 
 use App\Repository\ItemRepository;
+use App\Service\OrderPayService;
 use App\Tests\RestTestCase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -114,6 +115,112 @@ class OrderControllerTest extends RestTestCase
                 'error' => 'Invalid input data',
             ],
             json_decode($response->getContent(), true)
+        );
+    }
+
+    /**
+     * Проверка 400 ответа в случае невалидности данных запроса
+     *
+     * @param string $content          Тело запроса
+     * @param array  $expectedResponse Ожидаемый ответ
+     *
+     * @dataProvider provideTestPayOrderBadRequestResponse
+     */
+    public function testPayOrderBadRequestResponse(string $content, array $expectedResponse)
+    {
+        $response = $this->post(
+            '/api/order/pay',
+            [],
+            [],
+            [],
+            $content
+        );
+
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $this->assertEquals($expectedResponse, json_decode($response->getContent(), true));
+    }
+
+    /**
+     * Провайдер данных для testPayOrderBadRequestResponse
+     *
+     * @return array
+     */
+    public function provideTestPayOrderBadRequestResponse(): array
+    {
+        return [
+            [
+                json_encode([]),
+                [
+                    'error' => 'Required fields are expected',
+                ],
+            ],
+            [
+                json_encode(['id' => '12']),
+                [
+                    'error' => 'Required fields are expected',
+                ],
+            ],
+            [
+                json_encode(['amount' => '4200.0']),
+                [
+                    'error' => 'Required fields are expected',
+                ],
+            ],
+            [
+                json_encode([
+                    'id'     => '12s',
+                    'amount' => '4200.0',
+                ]),
+                [
+                    'error' => 'Invalid input data',
+                ],
+            ],
+            [
+                json_encode([
+                    'id'     => '1',
+                    'amount' => '1200some string.0',
+                ]),
+                [
+                    'error' => 'Invalid input data',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Проверка корректности ответа при успешной оплате заказа
+     */
+    public function testPayOrderSuccessResponse()
+    {
+        /*
+         * Подменяем инстанс сервиса моком для эмуляции успешной оплаты
+         */
+        $payOrderServiceMock = $this->getMockBuilder(OrderPayService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->setContainerDependency('test.pay_order_service', $payOrderServiceMock);
+
+        $response = $this->post(
+            '/api/order/pay',
+            [],
+            [],
+            [],
+            json_encode([
+                'id'     => '1',
+                'amount' => '300.00',
+            ])
+        );
+
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertTrue($response->isOk());
+
+        $result = json_decode($response->getContent(), true);
+        $this->assertEquals(
+            [
+                'success' => true,
+            ],
+            $result
         );
     }
 }

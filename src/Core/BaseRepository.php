@@ -117,10 +117,10 @@ abstract class BaseRepository
             $data[$field] = $this->formatValueToDBFormat($field, $value);
         }
 
-        $id = $data[static::PRIMARY_KEY] ?? null;
-        if (empty($id)) {
-            unset($data[static::PRIMARY_KEY]);
+        $id = $data[static::PRIMARY_KEY];
+        unset($data[static::PRIMARY_KEY]);
 
+        if (empty($id)) {
             $id = $this->insertRow($data);
             // TODO сделать проставление св-ва id через ReflectionProperty
             $idSetter = 'set'.ucfirst(static::PRIMARY_KEY);
@@ -177,12 +177,14 @@ abstract class BaseRepository
      */
     private function updateRow(int $id, array $data)
     {
+        $setPart = implode(' = ?,', array_map(function ($field) {
+            return $this->camelToSnakeCase($field);
+        }, array_keys($data))) . ' = ?';
+
         $sql = sprintf(
             'UPDATE "%s" SET %s WHERE %s',
             static::TABLE_NAME,
-            implode(' = ?,', array_map(function ($field) {
-                return $this->camelToSnakeCase($field);
-            }, array_keys($data))),
+            $setPart,
             static::PRIMARY_KEY . ' = ?'
         );
 

@@ -1,6 +1,9 @@
 imports:
     - { resource: parameters/db.yaml }
 
+parameters:
+    order.pay_check_url: 'http://ya.ru'
+
 services:
     _defaults:
         autowire: true
@@ -32,4 +35,11 @@ services:
 
     App\Service\CreateOrderServiceInterface: '@App\Service\CreateOrderService'
 
+    App\Service\OrderPayService:
+        arguments:
+            $payCheckURL: '%order.pay_check_url%'
+
     App\Service\OrderPayServiceInterface: '@App\Service\OrderPayService'
+
+    GuzzleHttp\ClientInterface:
+        class: GuzzleHttp\Client

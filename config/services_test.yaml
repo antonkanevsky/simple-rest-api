@@ -19,6 +19,9 @@ services:
     test.create_order_service:
         alias: 'App\Service\CreateOrderService'
         public: true
+    test.pay_order_service:
+        alias: 'App\Service\OrderPayService'
+        public: true
 
     App\Repository\OrderRepository:
         public: true
