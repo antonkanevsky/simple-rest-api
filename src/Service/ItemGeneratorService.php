@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Service;
 
@@ -15,7 +15,7 @@ class ItemGeneratorService implements ItemGeneratorServiceInterface
     /**
      * Лимит товаров для генерации (по умолчанию)
      */
-    const DEFAULT_LIMIT = 20;
+    private const DEFAULT_LIMIT = 20;
 
     /**
      * Репозиторий товаров

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Core;
 
@@ -12,23 +12,23 @@ abstract class BaseRepository
     /**
      * Название таблицы сущности
      */
-    const TABLE_NAME = '';
+    public const TABLE_NAME = '';
 
     /**
      * Маппинг полей к типам в бд
      */
-    const FIELDS_TYPE_MAPPING = [];
+    protected const FIELDS_TYPE_MAPPING = [];
 
     /**
      * Первичный ключ по умолчанию
      */
-    const PRIMARY_KEY = 'id';
+    protected const PRIMARY_KEY = 'id';
 
     // Типы колонок в БД
-    const COLUMN_TYPE_INT       = 1;
-    const COLUMN_TYPE_FLOAT     = 2;
-    const COLUMN_TYPE_STRING    = 3;
-    const COLUMN_TYPE_DATE_TIME = 4;
+    protected const COLUMN_TYPE_INT       = 1;
+    protected const COLUMN_TYPE_FLOAT     = 2;
+    protected const COLUMN_TYPE_STRING    = 3;
+    protected const COLUMN_TYPE_DATE_TIME = 4;
 
     /**
      * Поля сущности в бд
@@ -113,7 +113,7 @@ abstract class BaseRepository
         $data = [];
         foreach ($this->fields as $field) {
             $property = $this->normalizeToCamelCase($field);
-            $value    = $entity->{'get'.ucfirst($property)}();
+            $value    = $entity->{'get' . ucfirst($property)}();
             $data[$field] = $this->formatValueToDBFormat($field, $value);
         }
 
@@ -123,7 +123,7 @@ abstract class BaseRepository
         if (empty($id)) {
             $id = $this->insertRow($data);
             // TODO сделать проставление св-ва id через ReflectionProperty
-            $idSetter = 'set'.ucfirst(static::PRIMARY_KEY);
+            $idSetter = 'set' . ucfirst(static::PRIMARY_KEY);
             $entity->{$idSetter}((int)$id);
         } else {
             $this->updateRow((int)$id, $data);
@@ -217,14 +217,14 @@ abstract class BaseRepository
                 );
             }
 
-            $getterMethod = 'get'.ucfirst($property);
+            $getterMethod = 'get' . ucfirst($property);
             if (!$entityClass->hasMethod($getterMethod)) {
                 throw new \LogicException(
                     sprintf('You should specify %s::%s', $this->entityClass, $getterMethod)
                 );
             }
 
-            $setterMethod = 'set'.ucfirst($property);
+            $setterMethod = 'set' . ucfirst($property);
             if (!$entityClass->hasMethod($setterMethod)) {
                 throw new \LogicException(
                     sprintf('You should specify %s::%s', $this->entityClass, $setterMethod)
@@ -265,7 +265,7 @@ abstract class BaseRepository
         foreach ($data as $key => $value) {
             $value    = $this->formatValueToEntityFormat($key, $value);
             $property = $this->normalizeToCamelCase($key);
-            $entity->{'set'.ucfirst($property)}($value);
+            $entity->{'set' . ucfirst($property)}($value);
         }
 
         return $entity;
@@ -360,7 +360,7 @@ abstract class BaseRepository
     private function normalizeToCamelCase(string $column): string
     {
         $camelCasedName = preg_replace_callback('/(^|_|\.)+(.)/', function ($match) {
-            return ('.' === $match[1] ? '_' : '').strtoupper($match[2]);
+            return ('.' === $match[1] ? '_' : '') . strtoupper($match[2]);
         }, $column);
 
         return lcfirst($camelCasedName);

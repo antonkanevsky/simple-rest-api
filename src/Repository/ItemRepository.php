@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Repository;
 
@@ -19,12 +19,12 @@ class ItemRepository extends BaseRepository
     /**
      * {@inheritdoc}
      */
-    const TABLE_NAME = 'items';
+    public const TABLE_NAME = 'items';
 
     /**
      * {@inheritdoc}
      */
-    const FIELDS_TYPE_MAPPING = [
+    protected const FIELDS_TYPE_MAPPING = [
         'id'    => self::COLUMN_TYPE_INT,
         'name'  => self::COLUMN_TYPE_STRING,
         'price' => self::COLUMN_TYPE_FLOAT,

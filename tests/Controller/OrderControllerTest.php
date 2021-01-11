@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Tests\Controller;
 
@@ -62,9 +62,9 @@ class OrderControllerTest extends RestTestCase
      *
      * @param string $content Тело запроса
      *
-     * @dataProvider provideTestCreateOrderBadRequestResponse
+     * @dataProvider provideTestCreateOrderWithBadRequestResponse
      */
-    public function testCreateOrderBadRequestResponse(string $content)
+    public function testCreateOrderWithBadRequestResponse(string $content)
     {
         $response = $this->post(
             '/api/order/create',
@@ -79,11 +79,11 @@ class OrderControllerTest extends RestTestCase
     }
 
     /**
-     * Данные ревеста для testCreateOrderBadRequestResponse
+     * Данные ревеста для testCreateOrderWithBadRequestResponse
      *
      * @return array
      */
-    public function provideTestCreateOrderBadRequestResponse(): array
+    public function provideTestCreateOrderWithBadRequestResponse(): array
     {
         return [
             [

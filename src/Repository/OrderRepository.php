@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Repository;
 
@@ -20,12 +20,12 @@ class OrderRepository extends BaseRepository
     /**
      * {@inheritdoc}
      */
-    const TABLE_NAME = 'orders';
+    public const TABLE_NAME = 'orders';
 
     /**
      * {@inheritdoc}
      */
-    const FIELDS_TYPE_MAPPING = [
+    protected const FIELDS_TYPE_MAPPING = [
         'id'         => self::COLUMN_TYPE_INT,
         'created_at' => self::COLUMN_TYPE_DATE_TIME,
         'amount'     => self::COLUMN_TYPE_FLOAT,

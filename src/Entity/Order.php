@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -15,12 +15,12 @@ class Order implements EntityInterface
     /**
      * Статус "Новый"
      */
-    const STATUS_NEW = 'new';
+    public const STATUS_NEW = 'new';
 
     /**
      * Статус "Оплачен"
      */
-    const STATUS_PAID = 'paid';
+    public const STATUS_PAID = 'paid';
 
     /**
      * Статусы заказа
