@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Tests\Controller;
 
@@ -59,7 +59,7 @@ class ItemControllerTest extends RestTestCase
                     'price' => 150.00,
                 ],
             ],
-            ItemRepository::TABLE_NAME
+            'items'
         );
 
         $response = $this->get('/api/items');
@@ -88,7 +88,7 @@ class ItemControllerTest extends RestTestCase
     /**
      * Проверка, что отдается пустой  респонс, когда в бд нет товаров
      */
-    public function testGetItemsEmptyResponse()
+    public function testGetItemsWithEmptyResponse()
     {
         $response = $this->get('/api/items');
 

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Core;
 
@@ -109,11 +109,11 @@ class Application
             'app.environment' => $this->environment,
         ]);
 
-        $confDir = $this->rootDir.'/config';
+        $confDir = $this->rootDir . '/config';
         $loader  = new DIYamlFileLoader($container, new FileLocator($confDir));
         $loader->load('services.yaml');
         // Настройка сервисов для конкретного окружения
-        $environmentConfigFile = sprintf($confDir.'/services_%s.yaml', $this->environment);
+        $environmentConfigFile = sprintf($confDir . '/services_%s.yaml', $this->environment);
         if (file_exists($environmentConfigFile)) {
             $loader->load($environmentConfigFile);
         }
@@ -130,7 +130,7 @@ class Application
      */
     private function initURLMatcher(Request $request): void
     {
-        $loader = new YamlFileLoader(new FileLocator($this->rootDir.'/config'));
+        $loader = new YamlFileLoader(new FileLocator($this->rootDir . '/config'));
         $routes = $loader->load('routes.yaml');
 
         $context = new RequestContext();
